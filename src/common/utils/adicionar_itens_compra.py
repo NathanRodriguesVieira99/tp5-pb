@@ -1,21 +1,19 @@
-from src.models.item_compra import ItemCompra
-from src.models.produto import Produto
-
-# !! FIX -> remover contato da camada de  com banco de dados
+from src.services.produto_service import ProdutoService
+from src.services.compra_service import CompraService
 
 
-def adicionar_itens_compra(session, id_compra):
+def adicionar_itens_compra(compra_service: CompraService,
+                           produto_service: ProdutoService, id_compra: int) -> float:
     total = 0
 
     while True:
         try:
-            id_produto = int(input("\nID do produto (aperte 0 para sair): "))
+            id_produto = int(
+                input("\nID do produto (aperte 0 para sair): "))
             if id_produto == 0:
                 break
 
-            produto = session.query(Produto).filter(
-                Produto.id_produto == id_produto
-            ).first()
+            produto = produto_service.obter_produto(id_produto)
 
             # valida se o produto não existe
             if not produto:
@@ -35,22 +33,15 @@ def adicionar_itens_compra(session, id_compra):
                 continue
 
             # criar um item
-            subtotal = quantidade * produto.preco
-            item = ItemCompra(
-                id_compra=id_compra,
-                id_produto=id_produto,
-                quantidade=quantidade,
-                preco=produto.preco,
-                subtotal=subtotal
-            )
-            session.add(item)
-
-            # atualiza o estoque
-            produto.quantidade -= quantidade
-
-            session.commit()
-            print(f"✓ {produto.nome} x{quantidade} = R$ {subtotal:.2f}")
-            total += subtotal
+            try:
+                item = compra_service.adicionar_item_compra(
+                    id_compra, id_produto, quantidade)
+                print("\n" + "="*50)
+                print(
+                    f'Produto: {produto.nome} x{quantidade} = R$ {item.subtotal:.2f}')
+                total += item.subtotal
+            except ValueError as e:
+                print(f'Erro: {e}')
 
         except ValueError:
             print("Entrada inválida")
