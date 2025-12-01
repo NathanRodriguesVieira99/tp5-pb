@@ -4,6 +4,7 @@ from src.models.compra import Compra
 from src.models.produto import Produto
 from src.models.fornecedor import Fornecedor
 from src.models.produto_fornecedor import ProdutoFornecedor
+from src.models.item_compra import ItemCompra
 from sqlalchemy import func
 
 
@@ -253,8 +254,24 @@ def menu_relatorios(session):
                 print(f"{cliente}: R$ {total:.2f}")
 
         elif opcao == "3":
-            print("\n--- PRODUTOS MAIS VENDIDOS ---")
-            print("(Relatório em desenvolvimento)")
+            print("\n--- PRODUTOS MAIS VENDIDOS (Top 5) ---")
+            top_produtos = session.query(
+                Produto.nome,
+                func.sum(ItemCompra.quantidade).label('qtd_vendida'),
+                func.sum(ItemCompra.subtotal).label('total_vendido')
+            ).join(ItemCompra, Produto.id_produto == ItemCompra.id_produto).group_by(
+                Produto.id_produto
+            ).order_by(
+                func.sum(ItemCompra.quantidade).desc()
+            ).limit(5).all()
+
+            if not top_produtos:
+                print("Nenhuma venda registrada ainda.")
+            else:
+                for nome, qtd, total in top_produtos:
+                    total = total or 0
+                    print(
+                        f"{nome}: {int(qtd)} unidade(s) vendidas - R$ {total:.2f}")
 
         elif opcao == "4":
             total = session.query(func.sum(Compra.total_compra)).scalar() or 0
