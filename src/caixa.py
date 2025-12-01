@@ -1,5 +1,7 @@
-from src.db.database import iniciar_db, obter_sessao
-from src.models.compra import Compra
+from src.db.database import iniciar_db
+from src.services.compra_service import CompraService
+from src.services.cliente_service import ClienteService
+from src.services.produto_service import ProdutoService
 from src.config.data_loader import carregar_clientes_json, carregar_produtos_csv
 from src.config.scraper import atualizar_produtos_csv
 from src.common.utils.emitir_nota_fiscal import emitir_nota_fiscal
@@ -12,7 +14,11 @@ def main():
 
     # inicia o db
     iniciar_db()
-    session = obter_sessao()
+
+    # inicia os servicos
+    compra_service = CompraService()
+    cliente_service = ClienteService()
+    produto_service = ProdutoService()
 
     try:
         # faz scraping dos produtos
@@ -26,6 +32,8 @@ def main():
             print()
 
         # carrega dados
+        session = compra_service.session
+
         print("Carregando clientes...")
         carregar_clientes_json("src/config/json/clientes.json", session)
 
@@ -43,15 +51,18 @@ def main():
             if opcao == 'f':
                 break
             elif opcao == 'i':
-                cliente = solicitar_id_cliente(session)
+                cliente = solicitar_id_cliente(cliente_service)
                 if cliente:
-                    compra = Compra(id_cliente=cliente.id_cliente)
-                    session.add(compra)
-                    session.commit()
+                    compra = compra_service.criar_compra(cliente.id_cliente)
 
-                    total = adicionar_itens_compra(session, compra.id_compra)
+                    total = adicionar_itens_compra(
+                        compra_service, produto_service, compra.id_compra)
                     if total > 0:
-                        emitir_nota_fiscal(session, cliente, compra, total)
+                        compra_service.finalizar_compra(compra.id_compra)
+
+                        emitir_nota_fiscal(
+                            compra_service, compra.id_compra, total)
+
                         totais.append(total)
 
         # fecha o caixa
@@ -65,8 +76,11 @@ def main():
             print("Nenhuma venda realizada")
         print("="*50)
 
+    # fecha os servicos
     finally:
-        session.close()
+        compra_service.fechar()
+        cliente_service.fechar()
+        produto_service.fechar()
 
 
 if __name__ == "__main__":
