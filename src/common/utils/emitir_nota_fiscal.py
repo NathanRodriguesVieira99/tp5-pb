@@ -1,10 +1,17 @@
-from src.models.item_compra import ItemCompra
-from src.models.produto import Produto
-
-# !! FIX -> remover contato da camada de  com banco de dados
+from src.services.compra_service import CompraService
 
 
-def emitir_nota_fiscal(session, cliente, compra, total):
+def emitir_nota_fiscal(compra_service: CompraService, id_compra: int, total: float) -> None:
+
+    try:
+        compra = compra_service.obter_compra(id_compra)
+    except ValueError as e:
+        print(f'Erro: {e} ao emitir nota fiscal!')
+        return
+
+    cliente = compra.cliente
+    itens = compra.itens
+
     print("\n" + "="*50)
     print("NOTA FISCAL")
     print("="*50)
@@ -12,20 +19,9 @@ def emitir_nota_fiscal(session, cliente, compra, total):
     print(f"Data: {compra.data_hora.strftime('%d/%m/%Y %H:%M')}")
     print("-"*50)
 
-    itens = session.query(ItemCompra).filter(
-        ItemCompra.id_compra == compra.id_compra
-    ).all()
-
     for item in itens:
-        produto = session.query(Produto).filter(
-            Produto.id_produto == item.id_produto
-        ).first()
-        print(f"{produto.nome} x{item.quantidade} = R$ {item.subtotal:.2f}")
+        print(f"{item.produto.nome} x{item.quantidade} = R$ {item.subtotal:.2f}")
 
     print("-"*50)
     print(f"TOTAL: R$ {total:.2f}")
     print("="*50 + "\n")
-
-    # atualizar total  compra
-    compra.total_compra = total
-    session.commit()
