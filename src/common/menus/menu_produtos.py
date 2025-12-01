@@ -1,4 +1,4 @@
-from src.common.utils.assosiar_fornecedores import associar_fornecedores
+from src.common.utils.associar_fornecedores import associar_fornecedores
 from src.models.item_compra import ItemCompra
 from src.models.produto import Produto
 
