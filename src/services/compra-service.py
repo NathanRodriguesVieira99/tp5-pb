@@ -2,6 +2,8 @@ from src.db.database import obter_sessao
 from src.db.repositories.produto_repository import ProdutoRepository
 from src.db.repositories.compra_repository import CompraRepository
 
+# !! FIX -> melhorar a saida dos produtos comprados (ao inves de mostrar um por um, mostrar em uma linha nome, quantidade e soma do preço)
+
 
 class CompraService:
     def __init__(self):
