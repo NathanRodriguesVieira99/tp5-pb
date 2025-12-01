@@ -2,9 +2,9 @@ from src.db.database import iniciar_db, obter_sessao
 from src.models.compra import Compra
 from src.config.data_loader import carregar_clientes_json, carregar_produtos_csv
 from src.config.scraper import atualizar_produtos_csv
-from src.functions.utils.emitir_nota_fiscal import emitir_nota_fiscal
-from src.functions.utils.adicionar_itens_compra import adicionar_itens_compra
-from src.functions.utils.solicitar_id_cliente import solicitar_id_cliente
+from src.common.utils.emitir_nota_fiscal import emitir_nota_fiscal
+from src.common.utils.adicionar_itens_compra import adicionar_itens_compra
+from src.common.utils.solicitar_id_cliente import solicitar_id_cliente
 
 
 def main():

@@ -1,7 +1,7 @@
-from src.functions.menus.menu_produtos import menu_produtos
+from src.common.menus.menu_produtos import menu_produtos
 from src.db.database import obter_sessao, iniciar_db
-from src.functions.menus.menu_relatorios import menu_relatorios
-from src.functions.menus.menu_clientes import menu_clientes
+from src.common.menus.menu_relatorios import menu_relatorios
+from src.common.menus.menu_clientes import menu_clientes
 
 
 def main():
