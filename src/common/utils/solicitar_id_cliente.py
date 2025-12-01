@@ -1,27 +1,20 @@
+from typing import Optional
 from src.models.cliente import Cliente
+from src.services.cliente_service import ClienteService
 
-# !! FIX -> remover contato da camada de  com banco de dados
 
-
-def solicitar_id_cliente(session):
+def solicitar_id_cliente(cliente_service: ClienteService) -> Optional[Cliente]:
     while True:
         try:
             id_cliente = int(input('\nID do cliente (aperte 0 para sair):'))
             if id_cliente == 0:
                 return None
 
-            cliente = session.query(Cliente).filter(
-                Cliente.id_cliente == id_cliente
-            ).first()
-
-            # valida se não houver cliente com o ID
-            if not cliente:
-                nome = input('Cliente não existe').strip()
-                if nome:
-                    cliente = Cliente(id_cliente=id_cliente, nome=nome)
-                    session.add(cliente)
-                    session.commit()
-            return cliente
+            try:
+                cliente = cliente_service.obter_cliente(id_cliente)
+                return cliente
+            except ValueError:
+                print("Cliente não encontrado.")
 
         except ValueError:
             print('ID inválido!')
