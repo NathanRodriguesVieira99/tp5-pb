@@ -63,7 +63,7 @@ class ProdutoRepository:
 
     # atualiza o estoque de produtos
     def atualizar_estoque(self, id_produto: int, quantidade: int) -> None:
-        produto = self.buscar_com_estoque_baixo(id_produto)
+        produto = self.buscar_por_id(id_produto)
         if produto:
             produto.quantidade -= quantidade
             self.session.commit()
