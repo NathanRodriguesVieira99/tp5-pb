@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from src.models.produto import Produto
+from src.models.item_compra import ItemCompra
 
 
 class ProdutoRepository:
@@ -43,6 +44,12 @@ class ProdutoRepository:
     def deletar(self, id_produto: int) -> bool:
         produto = self.buscar_por_id(id_produto)
         if produto:
+            existe_item = self.session.query(ItemCompra).filter(
+                ItemCompra.id_produto == id_produto
+            ).first()
+            if existe_item:
+                return False
+
             self.session.delete(produto)
             self.session.commit()
             return True

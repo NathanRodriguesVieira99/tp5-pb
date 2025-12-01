@@ -137,10 +137,18 @@ def menu_produtos(session):
                 if not produto:
                     print("Produto não encontrado!")
                 else:
-                    nome = produto.nome
-                    session.delete(produto)
-                    session.commit()
-                    print(f"Produto '{nome}' deletado com sucesso!")
+                    # Verifica se existe ao menos um item de compra associado ao produto
+                    existe_item = session.query(ItemCompra).filter(
+                        ItemCompra.id_produto == id_produto
+                    ).first()
+                    if existe_item:
+                        print(
+                            " Não é possível deletar: existe(m) venda(s) associada(s) a este produto.")
+                    else:
+                        nome = produto.nome
+                        session.delete(produto)
+                        session.commit()
+                        print(f"Produto '{nome}' deletado com sucesso!")
             except ValueError:
                 print("Entrada inválida!")
                 session.rollback()

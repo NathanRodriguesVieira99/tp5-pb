@@ -51,7 +51,10 @@ class ProdutoService:
         return self.repo.atualizar(id_produto, nome, quantidade, preco)
 
     def deletar_produto(self, id_produto: int):
-        return self.deletar_produto(id_produto)
+        deleted = self.repo.deletar(id_produto)
+        if not deleted:
+            raise ValueError(' Existem vendas associadas! Não deletar!')
+        return True
 
     def produtos_com_baixo_estoque(self, limite: int) -> list:
         return self.repo.buscar_com_estoque_baixo(limite)
