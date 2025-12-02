@@ -27,6 +27,19 @@ class CompraRepository:
     def adicionar_item(self, id_compra: int, id_produto: int,
                        quantidade: int, preco: float) -> ItemCompra:
         subtotal = quantidade * preco
+
+        existe_item = self.session.query(ItemCompra).filter(
+            ItemCompra.id_compra == id_compra,
+            ItemCompra.id_produto == id_produto
+        ).first()
+
+        if existe_item:
+            existe_item.quantidade += quantidade
+            existe_item.subtotal += subtotal
+            existe_item.preco = preco
+            self.session.commit()
+            return existe_item
+
         item = ItemCompra(
             id_compra=id_compra,
             id_produto=id_produto,
