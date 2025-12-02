@@ -1,8 +1,6 @@
 from src.models.item_compra import ItemCompra
 from src.models.produto import Produto
 
-# !! FIX -> remover contato da camada de  com banco de dados
-
 
 def emitir_nota_fiscal(session, cliente, compra, total):
     print("\n" + "="*50)
