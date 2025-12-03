@@ -1,19 +1,20 @@
-from src.models.fornecedor import Fornecedor
-from src.models.produto import Produto
-from src.models.produto_fornecedor import ProdutoFornecedor
+from src.services.produto_service import ProdutoService
 
 
-def associar_fornecedores(session):
+def associar_fornecedores(produto_service: ProdutoService):
     try:
         id_produto = int(input("ID do produto: "))
-        produto = session.query(Produto).filter(
-            Produto.id_produto == id_produto).first()
-
-        if not produto:
-            print("Produto não encontrado!")
+        
+        # usa service para obter produto
+        try:
+            produto = produto_service.obter_produto(id_produto)
+        except ValueError as e:
+            print(f"Erro: {e}")
             return
 
-        fornecedores = session.query(Fornecedor).all()
+        Fornecedor = __import__('src.models.fornecedor', fromlist=['Fornecedor']).Fornecedor
+        fornecedores = produto_service.repo.session.query(Fornecedor).all()
+        
         if not fornecedores:
             print("Nenhum fornecedor cadastrado!")
             return
@@ -24,28 +25,27 @@ def associar_fornecedores(session):
             print(f"ID: {f.id_fornecedor} | Nome: {f.nome}")
 
         id_fornecedor = int(input("\nID do fornecedor: "))
-        fornecedor = session.query(Fornecedor).filter(
-            Fornecedor.id_fornecedor == id_fornecedor).first()
+        
+        # busca fornecedor via session do service
+        fornecedor = produto_service.repo.session.query(Fornecedor).filter(
+            Fornecedor.id_fornecedor == id_fornecedor
+        ).first()
 
         if not fornecedor:
             print("Fornecedor não encontrado!")
             return
 
-        existe = session.query(ProdutoFornecedor).filter(
-            ProdutoFornecedor.id_produto == id_produto,
-            ProdutoFornecedor.id_fornecedor == id_fornecedor
-        ).first()
 
-        if existe:
+        if fornecedor in produto.fornecedores:
             print("Esta associação já existe!")
         else:
-            pf = ProdutoFornecedor(id_produto=id_produto,
-                                   id_fornecedor=id_fornecedor)
-            session.add(pf)
-            session.commit()
-            print(
-                f"✓ Fornecedor '{fornecedor.nome}' associado ao produto '{produto.nome}'!")
+            produto.fornecedores.append(fornecedor)
+            produto_service.repo.session.commit()
+            print(f"✓ Fornecedor '{fornecedor.nome}' associado ao produto '{produto.nome}'!")
 
     except ValueError:
         print("Entrada inválida!")
-        session.rollback()
+        produto_service.repo.session.rollback()
+    except Exception as e:
+        print(f"Erro: {e}")
+        produto_service.repo.session.rollback()
