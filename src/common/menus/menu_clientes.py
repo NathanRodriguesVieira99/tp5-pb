@@ -1,9 +1,7 @@
-from sqlalchemy import func
-from src.models.cliente import Cliente
-from src.models.compra import Compra
+from src.services.relatorio_service import RelatorioService
 
 
-def menu_clientes(session):
+def menu_clientes(relatorio_service: RelatorioService):
     while True:
         print("\n" + "="*50)
         print("SIG - GERENCIAMENTO DE CLIENTES")
@@ -16,23 +14,23 @@ def menu_clientes(session):
         opcao = input("Escolha uma opção: ").strip()
 
         if opcao == "1":
-            clientes_com_compras = session.query(
-                Cliente).join(Compra).distinct().all()
+            clientes_com_compras = relatorio_service.clientes_com_compras()
             if not clientes_com_compras:
                 print("Nenhum cliente com compras encontrado!")
+
             else:
                 print("\n--- CLIENTES COM COMPRAS ---")
                 for cliente in clientes_com_compras:
-                    total_gasto = session.query(func.sum(Compra.total_compra)).filter(
-                        Compra.id_cliente == cliente.id_cliente
-                    ).scalar() or 0
+
+                    total_gasto = sum(
+                        sum(item.subtotal for item in compra.itens)
+                        for compra in cliente.compras
+                    )
                     print(
                         f"ID: {cliente.id_cliente} | Nome: {cliente.nome} | Total Gasto: R$ {total_gasto:.2f}")
 
         elif opcao == "2":
-            clientes_sem_compras = session.query(Cliente).outerjoin(Compra).filter(
-                Compra.id_compra == None
-            ).all()
+            clientes_sem_compras = relatorio_service.clientes_sem_compra()
             if not clientes_sem_compras:
                 print("Todos os clientes têm compras.")
             else:
