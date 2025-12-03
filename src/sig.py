@@ -1,21 +1,33 @@
+from src.services.relatorio_service import RelatorioService
+from src.services.produto_service import ProdutoService
+from src.services.cliente_service import ClienteService
 from src.common.menus.menu_produtos import menu_produtos
-from src.db.database import obter_sessao, iniciar_db
+from src.db.database import iniciar_db
 from src.common.menus.menu_relatorios import menu_relatorios
 from src.common.menus.menu_clientes import menu_clientes
+from src.config.data_loader import carregar_fornecedores_excel, carregar_produtos_fornecedores_excel
 
 
 def main():
+    # inicia o db
     iniciar_db()
-    session = obter_sessao()
+
+    # inicia os servicos
+    cliente_service = ClienteService()
+    produto_service = ProdutoService()
+    relatorio_service = RelatorioService()
 
     try:
-        from src.config.data_loader import carregar_fornecedores_excel, carregar_produtos_fornecedores_excel
+        session = produto_service.session
 
+        # carrega o CSV e Excel
         print("Carregando dados do SIG...")
         carregar_fornecedores_excel(
             "src/config/excel/fornecedores.xlsx", session)
+
         carregar_produtos_fornecedores_excel(
             "src/config/excel/fornecedores.xlsx", session)
+
         print()
 
         while True:
@@ -31,11 +43,11 @@ def main():
             opcao = input("Escolha uma opção: ").strip()
 
             if opcao == "1":
-                menu_clientes(session)
+                menu_clientes(relatorio_service)
             elif opcao == "2":
-                menu_produtos(session)
+                menu_produtos(produto_service)
             elif opcao == "3":
-                menu_relatorios(session)
+                menu_relatorios(relatorio_service)
             elif opcao == "0":
                 break
             else:
@@ -43,10 +55,15 @@ def main():
 
     except KeyboardInterrupt:
         print("\n\nSIG interrompido pelo usuário.")
+
     except Exception as e:
         print(f"Erro: {e}")
+
     finally:
-        session.close()
+       # fecha os servicos
+        cliente_service.fechar()
+        produto_service.fechar()
+        relatorio_service.fechar()
 
 
 if __name__ == "__main__":
