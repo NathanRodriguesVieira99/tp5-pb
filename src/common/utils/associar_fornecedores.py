@@ -2,8 +2,6 @@ from src.models.fornecedor import Fornecedor
 from src.models.produto import Produto
 from src.models.produto_fornecedor import ProdutoFornecedor
 
-# !! FIX -> remover contato da camada de  com banco de dados
-
 
 def associar_fornecedores(session):
     try:
