@@ -27,6 +27,7 @@ class CompraRepository:
     def adicionar_item(self, id_compra: int, id_produto: int,
                        quantidade: int, preco: float) -> ItemCompra:
         subtotal = quantidade * preco
+
         item = ItemCompra(
             id_compra=id_compra,
             id_produto=id_produto,
